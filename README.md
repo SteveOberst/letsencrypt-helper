@@ -132,11 +132,11 @@ dependencies {
 | Property                                                   | Description                                                                                                             | Default value, if any  |
 |------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|------------------------|
 | server.ssl.key-store                                       | Path to the KeyStore, where Let's Encrypt certificates and account key are to be stored (or are already there)          |                        |
-| server.ssl.key-store                                       | KeyStore type (i.e. PKCS12)                                                                                             |                        |
-| server.ssl.key-store-pasword                               | Password for KeyStore with Let's Encrypt certificate and account key                                                    |                        |
+| server.ssl.key-store-type                                  | KeyStore type (i.e. PKCS12)                                                                                             |                        |
+| server.ssl.key-store-password                              | Password for KeyStore with Let's Encrypt certificate and account key                                                    |                        |
 | server.ssl.key-alias                                       | Let's Encrypt certificate key alias in the keystore                                                                     |                        |
 | server.port                                                | Port (secure SSL/TLS) on which your application is deployed                                                             |                        |
-| lets-encrypt-helper.domain                                 | Your applications' domain (i.e. example.com)                                                                            |                        |
+| lets-encrypt-helper.domain                                 | Your application's domain (i.e. example.com)                                                                            |                        |
 | lets-encrypt-helper.contact                                | The contact of person responsible for the domain (i.e. mailto:john@example.com)                                         |                        |
 | lets-encrypt-helper.account-key-alias                      | Account key alias                                                                                                       | letsencrypt-user       |
 | lets-encrypt-helper.letsencrypt-server                     | Let's Encrypt server to use                                                                                             | acme://letsencrypt.org |
@@ -144,10 +144,11 @@ dependencies {
 | lets-encrypt-helper.update-before-expiry                   | Start trying to update certificate this time before expiration                                                          | P30D (30 days)         |
 | lets-encrypt-helper.busy-wait-interval                     | Busy wait interval for thread that checks if the certificate is valid                                                   | PT1M (1 minute)        |
 | lets-encrypt-helper.account-cert-validity                  | Validity duration for Account key                                                                                       | P3650D (3650 days)     |
-| lets-encrypt-helper.store-cert-chain                       | Store entire trust chain or only domain certificate (for browsers domain ceritificate is enough)                        | true                   |
+| lets-encrypt-helper.store-cert-chain                       | Store entire trust chain or only domain certificate (for browsers domain certificate is enough)                         | true                   |
 | lets-encrypt-helper.enabled                                | Is the helper enabled                                                                                                   | true                   |
 | lets-encrypt-helper.return-null-model                      | If challenge endpoint should return null model (i.e. `true` is sane default for cases with Thymeleaf rendering the page) | true                   |
 | lets-encrypt-helper.development-only.http01-challenge-port | For development only, port for HTTP-01 ACME challenge                                                                   | 80                     |
+| lets-encrypt-helper.auto-create-keystore-dir               | Whether to auto-create the parent directory for the keystore if it does not exist                                       | true                   |
 
 
 ### Example configuration

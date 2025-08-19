@@ -100,6 +100,7 @@ public class TomcatWellKnownLetsEncryptChallengeEndpointConfig implements Tomcat
     private final boolean storeCertChain;
     private final boolean enabled;
     private final boolean returnNullModel;
+    private final boolean autoCreateKeystoreDir;
     private final ServerProperties serverProperties;
 
     // Development only properties, you can't change these for production
@@ -142,7 +143,8 @@ public class TomcatWellKnownLetsEncryptChallengeEndpointConfig implements Tomcat
             @Value("${lets-encrypt-helper.store-cert-chain:true}") boolean storeCertChain,
             @Value("${lets-encrypt-helper.enabled:true}") boolean enabled,
             @Value("${lets-encrypt-helper.return-null-model:true}") boolean returnNullModel,
-            @Value("${lets-encrypt-helper.development-only.http01-challenge-port:80}") int http01ChallengePort
+            @Value("${lets-encrypt-helper.development-only.http01-challenge-port:80}") int http01ChallengePort,
+            @Value("${lets-encrypt-helper.create-parent-dirs:true}") boolean autoCreateKeystoreDir
     ) {
         Security.addProvider(new BouncyCastleProvider());
         this.serverPort = serverPort;
@@ -159,6 +161,7 @@ public class TomcatWellKnownLetsEncryptChallengeEndpointConfig implements Tomcat
         this.enabled = enabled;
         this.returnNullModel = returnNullModel;
         this.http01ChallengePort = http01ChallengePort;
+        this.autoCreateKeystoreDir = autoCreateKeystoreDir;
 
         if (null == this.serverProperties.getSsl()) {
             throw new IllegalStateException("SSL is not configured");
@@ -289,6 +292,8 @@ public class TomcatWellKnownLetsEncryptChallengeEndpointConfig implements Tomcat
 
     private void createBasicKeystoreIfMissing() {
         File keystoreFile = getKeystoreFile();
+        ensureParentDirExists(keystoreFile);
+        
         if (keystoreFile.exists()) {
             if (!keystoreFile.canWrite()) {
                 throw new IllegalArgumentException(String.format("Keystore %s is not writable, certificate update is impossible", keystoreFile.getAbsolutePath()));
@@ -301,6 +306,23 @@ public class TomcatWellKnownLetsEncryptChallengeEndpointConfig implements Tomcat
         var keystore = createBasicKeystoreWithSelfSignedCert();
         saveKeystore(keystoreFile, keystore);
         logger.info("Created basic (dummy cert, real account/domain keys) KeyStore: {}", keystoreFile.getAbsolutePath());
+    }
+    
+    private void ensureParentDirExists(File keystoreFile) {
+        File parent = keystoreFile.getParentFile();
+        if (parent != null && !parent.exists()) {
+            if (autoCreateKeystoreDir) {
+                boolean ok = parent.mkdirs();
+                if (!ok && !parent.exists()) {
+                    throw new IllegalStateException("Failed to create keystore parent directory: " + parent.getAbsolutePath());
+                }
+                logger.info("Created keystore parent directory: {}", parent.getAbsolutePath());
+            } else {
+                throw new IllegalStateException(
+                    "Keystore parent directory does not exist: " + parent.getAbsolutePath() +
+                    " (set lets-encrypt-helper.create-parent-dirs=true to auto-create)");
+            }
+        }
     }
 
     private TargetProtocol createObservableProtocol(AbstractHttp11Protocol<?> protocol) {
